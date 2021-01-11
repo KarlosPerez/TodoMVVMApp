@@ -3,4 +3,9 @@
     <string name="add_task_txt_task_name">Task Name</string>
     <string name="add_task_cbk_important">Important Task</string>
     <string name="add_task_txt_date_created">Date created:</string>
+    <string name="action_search_icon">Search</string>
+    <string name="action_search_sort">Sort</string>
+    <string name="action_search_sort_by_name">Sort by name</string>
+    <string name="action_hide_completed_task">Hide completed</string>
+    <string name="action_delete_completed_task">Delete all completed</string>
 </resources>
