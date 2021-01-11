@@ -8,4 +8,5 @@
     <string name="action_search_sort_by_name">Sort by name</string>
     <string name="action_hide_completed_task">Hide completed</string>
     <string name="action_delete_completed_task">Delete all completed</string>
+    <string name="action_sort_by_date_created">Sort by date</string>
 </resources>
