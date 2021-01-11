@@ -32,7 +32,7 @@ abstract class TaskDatabase : RoomDatabase() {
                 dao.insertTask(Task("Do the laundry"))
                 dao.insertTask(Task("Buy Groceries", important = true))
                 dao.insertTask(Task("Prepare Food", completed = true))
-                dao.insertTask(Task("Call mom"))
+                dao.insertTask(Task("Call mom", important = true))
                 dao.insertTask(Task("Visit Grandma", completed = true))
             }
         }
