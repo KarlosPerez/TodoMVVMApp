@@ -22,14 +22,12 @@ object PersistenceModule {
     @Singleton
     @Provides
     fun provideRoomDatabase(
-        @ApplicationContext context: Application,
+        context: Application,
         callback: TaskDatabase.Callback
-    ) {
-        Room.databaseBuilder(context, TaskDatabase::class.java, DATABASE_NAME)
+    ) = Room.databaseBuilder(context, TaskDatabase::class.java, DATABASE_NAME)
             .fallbackToDestructiveMigration()
             .addCallback(callback)
             .build()
-    }
 
     @Singleton
     @Provides
