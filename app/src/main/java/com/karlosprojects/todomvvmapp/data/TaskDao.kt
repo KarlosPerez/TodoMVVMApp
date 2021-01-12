@@ -1,7 +1,6 @@
 package com.karlosprojects.todomvvmapp.data
 
 import androidx.room.*
-import com.karlosprojects.todomvvmapp.ui.tasks.SortOrder
 import kotlinx.coroutines.flow.Flow
 
 @Dao
