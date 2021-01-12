@@ -9,9 +9,11 @@ import com.karlosprojects.todomvvmapp.data.SortOrder
 import com.karlosprojects.todomvvmapp.data.Task
 import com.karlosprojects.todomvvmapp.data.TaskDao
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @ExperimentalCoroutinesApi
@@ -28,6 +30,10 @@ class TaskViewModel @ViewModelInject constructor(
     val searchQuery = MutableStateFlow("")
 
     val preferencesFlow = preferences.preferencesFlow
+
+
+    private val taskEventChannel = Channel<TaskEvent>()
+    val taskEvent = taskEventChannel.receiveAsFlow()
 
     /**
      * flatMapLatest is a flow operator, which means that whenever the value of flow 'it' changes,
@@ -68,6 +74,24 @@ class TaskViewModel @ViewModelInject constructor(
 
     fun onTaskCheckedChanged(task: Task, isChecked : Boolean) = viewModelScope.launch {
         taskDao.updateTask(task.copy(completed = isChecked))
+    }
+
+    fun onTaskSwiped(task: Task) =viewModelScope.launch {
+        taskDao.deleteTask(task)
+        taskEventChannel.send(TaskEvent.ShowUndoDeleteTaskMessage(task))
+    }
+
+    fun onUndoDeleteClick(task: Task) = viewModelScope.launch {
+        taskDao.insertTask(task)
+    }
+
+    /**
+     * Sealed class is like an enum, it can represent a closed combination of different values,
+     * but as opposed at enum, this values can holds data, because those are instances of actual classes
+     * and actual objects
+     */
+    sealed class TaskEvent {
+        data class ShowUndoDeleteTaskMessage(val task: Task) : TaskEvent()
     }
 
 }

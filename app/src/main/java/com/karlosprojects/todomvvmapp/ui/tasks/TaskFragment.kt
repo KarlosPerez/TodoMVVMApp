@@ -9,7 +9,10 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.karlosprojects.todomvvmapp.R
 import com.karlosprojects.todomvvmapp.data.SortOrder
 import com.karlosprojects.todomvvmapp.data.Task
@@ -17,6 +20,7 @@ import com.karlosprojects.todomvvmapp.databinding.FragmentTasksBinding
 import com.karlosprojects.todomvvmapp.util.onQueryTextChange
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -40,11 +44,39 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickL
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(true)
             }
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val task = taskAdapter.currentList[viewHolder.adapterPosition]
+                    viewModel.onTaskSwiped(task)
+                }
+
+            }).attachToRecyclerView(tasksRecyclerView)
         }
 
         //submitList is a method of ListAdapter, and after we sent a new list, DiffUtil do the calculations (events and animations)
         viewModel.taskList.observe(viewLifecycleOwner) {
             taskAdapter.submitList(it)
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.taskEvent.collect { event ->
+                when(event) {
+                    is TaskViewModel.TaskEvent.ShowUndoDeleteTaskMessage -> {
+                        Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") {
+                                viewModel.onUndoDeleteClick(event.task)
+                            }.show()
+                    }
+                }
+            }
         }
 
         setHasOptionsMenu(true)
