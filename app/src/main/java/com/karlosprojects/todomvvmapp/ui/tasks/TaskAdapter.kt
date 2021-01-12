@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.karlosprojects.todomvvmapp.data.Task
 import com.karlosprojects.todomvvmapp.databinding.ItemTaskBinding
 
-class TaskAdapter : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DiffCallback()) {
+class TaskAdapter(private val listener : OnItemClickListener) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DiffCallback()) {
     /**
      * ListAdapter is a zip class of recyclerview.adapter
      * listAdapter is better whenever you use a reactive date source, when you get a completely new list passed to you,
@@ -33,7 +33,31 @@ class TaskAdapter : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DiffCallback()
         holder.bind(currentItem)
     }
 
-    class TaskViewHolder(private val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
+    /**
+     * inner class is equivalent to static class in java, which makes it independent from the other class
+     * we convert this class to inner class, in order to use getItem method of task
+     */
+    inner class TaskViewHolder(private val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        //this block is executed when the viewHolder is instantiated
+        init {
+            binding.apply {
+                root.setOnClickListener {
+                    val position = adapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        val task = getItem(position)
+                        listener.onItemClick(task)
+                    }
+                }
+                itemTaskCkbCompleted.setOnClickListener {
+                    val position = adapterPosition
+                    if(position != RecyclerView.NO_POSITION) {
+                        val task = getItem(position)
+                        listener.onCheckBoxClick(task, itemTaskCkbCompleted.isChecked)
+                    }
+                }
+            }
+        }
 
         fun bind(task: Task) {
             binding.apply {
@@ -43,6 +67,12 @@ class TaskAdapter : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DiffCallback()
                 itemTaskImgPriority.isVisible = task.important
             }
         }
+    }
+
+    //We create an interface to update the UI and the database
+    interface OnItemClickListener {
+        fun onItemClick(task : Task)
+        fun onCheckBoxClick(task: Task, isChecked : Boolean)
     }
 
     class DiffCallback : DiffUtil.ItemCallback<Task>() {

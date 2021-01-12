@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.karlosprojects.todomvvmapp.R
 import com.karlosprojects.todomvvmapp.data.SortOrder
+import com.karlosprojects.todomvvmapp.data.Task
 import com.karlosprojects.todomvvmapp.databinding.FragmentTasksBinding
 import com.karlosprojects.todomvvmapp.util.onQueryTextChange
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,7 +21,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class TaskFragment : Fragment(R.layout.fragment_tasks) {
+class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickListener {
 
     private val viewModel: TaskViewModel by viewModels()
 
@@ -30,7 +31,7 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
         //Don't need to inflate because the layout is already inflated. Note: Inflate means that a xml layout file is turned into objects
         val binding = FragmentTasksBinding.bind(view)
 
-        val taskAdapter = TaskAdapter()
+        val taskAdapter = TaskAdapter(this)
 
         //apply means that you don't need to call binding all the time to setup the views
         binding.apply {
@@ -64,6 +65,14 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
             menu.findItem(R.id.action_hide_completed_task).isChecked =
                 viewModel.preferencesFlow.first().hideCompleted
         }
+    }
+
+    override fun onItemClick(task: Task) {
+        viewModel.onTaskSelected(task)
+    }
+
+    override fun onCheckBoxClick(task: Task, isChecked: Boolean) {
+        viewModel.onTaskCheckedChanged(task, isChecked)
     }
 
     @ExperimentalCoroutinesApi
