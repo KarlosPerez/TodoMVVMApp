@@ -1,9 +1,8 @@
 package com.karlosprojects.todomvvmapp.ui.tasks
 
+import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.karlosprojects.todomvvmapp.data.PreferencesManager
 import com.karlosprojects.todomvvmapp.data.SortOrder
 import com.karlosprojects.todomvvmapp.data.Task
@@ -19,19 +18,27 @@ import kotlinx.coroutines.launch
 @ExperimentalCoroutinesApi
 class TaskViewModel @ViewModelInject constructor(
     private val taskDao: TaskDao,
-    private val preferences: PreferencesManager
+    private val preferences: PreferencesManager,
+    @Assisted private val state : SavedStateHandle
 ) : ViewModel() {
 
     /**
-     * This is like MutableLiveData, it can hold a single value, not like a normal flow, but we can use it
+     * MutableStateFlow: this is like MutableLiveData, it can hold a single value, not like a normal flow, but we can use it
      * as a flow. We pass a empty string because we don't want to filter anything immediately;
      * on the other variables, we pass an initial value
+     *
+     * update: we will use SavedStateHandle to store the searchQuery variable to handle process death. Since this variable
+     * is a flow, we can't store it in the SavedStateHandle. So, we store the searchQuery as a liveData and convert it as a flow
+     * in the combine method
      */
-    val searchQuery = MutableStateFlow("")
+    val searchQuery = state.getLiveData("searchQuery", "")
 
     val preferencesFlow = preferences.preferencesFlow
 
-
+    /**
+     * With taskEventChannel, we can emit events from our viewmodel, so the fragment can listen to them and take
+     * the proper action
+     */
     private val taskEventChannel = Channel<TaskEvent>()
     val taskEvent = taskEventChannel.receiveAsFlow()
 
@@ -50,7 +57,7 @@ class TaskViewModel @ViewModelInject constructor(
      * case we will emit a Pair value, but the logic remains the same
      */
     private val taskFlow = combine(
-        searchQuery,
+        searchQuery.asFlow(),
         preferencesFlow
     ) { searchQuery, filterPreferences ->
         Pair(searchQuery, filterPreferences)
@@ -68,8 +75,8 @@ class TaskViewModel @ViewModelInject constructor(
         preferences.updateHideCompleted(hideCompleted)
     }
 
-    fun onTaskSelected(task: Task) {
-
+    fun onTaskSelected(task: Task) = viewModelScope.launch {
+        taskEventChannel.send(TaskEvent.NavigateToEditTaskScreen(task))
     }
 
     fun onTaskCheckedChanged(task: Task, isChecked : Boolean) = viewModelScope.launch {
@@ -85,12 +92,18 @@ class TaskViewModel @ViewModelInject constructor(
         taskDao.insertTask(task)
     }
 
+    fun onAddNewTaskClick() = viewModelScope.launch {
+        taskEventChannel.send(TaskEvent.NavigateToAddTaskScreen)
+    }
+
     /**
      * Sealed class is like an enum, it can represent a closed combination of different values,
      * but as opposed at enum, this values can holds data, because those are instances of actual classes
      * and actual objects
      */
     sealed class TaskEvent {
+        object NavigateToAddTaskScreen : TaskEvent()
+        data class NavigateToEditTaskScreen(val task: Task) : TaskEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task) : TaskEvent()
     }
 

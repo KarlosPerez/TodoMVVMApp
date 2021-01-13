@@ -9,6 +9,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +18,7 @@ import com.karlosprojects.todomvvmapp.R
 import com.karlosprojects.todomvvmapp.data.SortOrder
 import com.karlosprojects.todomvvmapp.data.Task
 import com.karlosprojects.todomvvmapp.databinding.FragmentTasksBinding
+import com.karlosprojects.todomvvmapp.util.exhaustive
 import com.karlosprojects.todomvvmapp.util.onQueryTextChange
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,6 +31,7 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickL
 
     private val viewModel: TaskViewModel by viewModels()
 
+    @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -59,6 +62,10 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickL
                 }
 
             }).attachToRecyclerView(tasksRecyclerView)
+
+            taskFab.setOnClickListener {
+                viewModel.onAddNewTaskClick()
+            }
         }
 
         //submitList is a method of ListAdapter, and after we sent a new list, DiffUtil do the calculations (events and animations)
@@ -75,7 +82,16 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickL
                                 viewModel.onUndoDeleteClick(event.task)
                             }.show()
                     }
-                }
+                    TaskViewModel.TaskEvent.NavigateToAddTaskScreen -> {
+                        //We can use R.id.AddEditTaskFragment instead of action val, but using this way is compile time safety
+                        val action = TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(null, "New Task")
+                        findNavController().navigate(action)
+                    }
+                    is TaskViewModel.TaskEvent.NavigateToEditTaskScreen -> {
+                        val action = TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(event.task, "Edit Task")
+                        findNavController().navigate(action)
+                    }
+                }.exhaustive //this will turn this 'when' statement into an expression, making it compile time safety
             }
         }
 
