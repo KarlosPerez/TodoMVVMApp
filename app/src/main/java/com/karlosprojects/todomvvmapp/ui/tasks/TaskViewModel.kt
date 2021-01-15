@@ -108,6 +108,10 @@ class TaskViewModel @ViewModelInject constructor(
         taskEventChannel.send(TaskEvent.ShowTaskSavedConfirmationMessage(text))
     }
 
+    fun onDeleteAllCompletedClick() = viewModelScope.launch {
+        taskEventChannel.send(TaskEvent.NavigateToDelleteAllCompletedScreen)
+    }
+
     /**
      * Sealed class is like an enum, it can represent a closed combination of different values,
      * but as opposed at enum, this values can holds data, because those are instances of actual classes
@@ -115,6 +119,7 @@ class TaskViewModel @ViewModelInject constructor(
      */
     sealed class TaskEvent {
         object NavigateToAddTaskScreen : TaskEvent()
+        object NavigateToDelleteAllCompletedScreen : TaskEvent()
         data class NavigateToEditTaskScreen(val task: Task) : TaskEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task) : TaskEvent()
         data class ShowTaskSavedConfirmationMessage(val message : String) : TaskEvent()
