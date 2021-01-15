@@ -2,12 +2,20 @@ package com.karlosprojects.todomvvmapp.ui.addedittask
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.karlosprojects.todomvvmapp.R
 import com.karlosprojects.todomvvmapp.databinding.FragmentAddEditTaskBinding
+import com.karlosprojects.todomvvmapp.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
@@ -25,6 +33,36 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             addTaskCbkImportant.jumpDrawablesToCurrentState()
             addTaskTxtDateCreated.isVisible = viewModel.task != null
             addTaskTxtDateCreated.text = "Created ${viewModel.task?.createdDateFormatted}"
+
+            addTaskTxtTaskName.addTextChangedListener {
+                viewModel.taskName = it.toString()
+            }
+
+            addTaskCbkImportant.setOnCheckedChangeListener {  _ , isChecked ->
+                viewModel.taskImportance = isChecked
+            }
+
+            addTaskBtnSaveTask.setOnClickListener {
+                viewModel.onSaveClick()
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.addEditTaskEvent.collect { event ->
+                when (event) {
+                    is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> {
+                        Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG).show()
+                    }
+                    is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
+                        binding.addTaskTxtTaskName.clearFocus()
+                        setFragmentResult(
+                            "add_edit_request",
+                            bundleOf("add_edit_result" to event.result )
+                        )
+                        findNavController().popBackStack()
+                    }
+                }.exhaustive
+            }
         }
     }
 }

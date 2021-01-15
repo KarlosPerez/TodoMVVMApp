@@ -7,9 +7,10 @@ import com.karlosprojects.todomvvmapp.data.PreferencesManager
 import com.karlosprojects.todomvvmapp.data.SortOrder
 import com.karlosprojects.todomvvmapp.data.Task
 import com.karlosprojects.todomvvmapp.data.TaskDao
+import com.karlosprojects.todomvvmapp.ui.ADD_TASK_RESULT_OK
+import com.karlosprojects.todomvvmapp.ui.EDIT_TASK_RESULT_OK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -96,6 +97,17 @@ class TaskViewModel @ViewModelInject constructor(
         taskEventChannel.send(TaskEvent.NavigateToAddTaskScreen)
     }
 
+    fun onAddEditResult(result: Int) {
+        when (result) {
+            ADD_TASK_RESULT_OK -> showTaskSavedConfirmationMessage("Task Added")
+            EDIT_TASK_RESULT_OK -> showTaskSavedConfirmationMessage("Task Updated")
+        }
+    }
+
+    private fun showTaskSavedConfirmationMessage(text: String) = viewModelScope.launch {
+        taskEventChannel.send(TaskEvent.ShowTaskSavedConfirmationMessage(text))
+    }
+
     /**
      * Sealed class is like an enum, it can represent a closed combination of different values,
      * but as opposed at enum, this values can holds data, because those are instances of actual classes
@@ -105,6 +117,7 @@ class TaskViewModel @ViewModelInject constructor(
         object NavigateToAddTaskScreen : TaskEvent()
         data class NavigateToEditTaskScreen(val task: Task) : TaskEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task) : TaskEvent()
+        data class ShowTaskSavedConfirmationMessage(val message : String) : TaskEvent()
     }
 
 }
