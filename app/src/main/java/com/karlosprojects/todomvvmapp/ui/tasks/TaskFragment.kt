@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.karlosprojects.todomvvmapp.R
-import com.karlosprojects.todomvvmapp.data.SortOrder
-import com.karlosprojects.todomvvmapp.data.Task
+import com.karlosprojects.local.SortOrder
+import com.karlosprojects.local.entity.Task
 import com.karlosprojects.todomvvmapp.databinding.FragmentTasksBinding
 import com.karlosprojects.todomvvmapp.ui.base.BaseFragment
 import com.karlosprojects.todomvvmapp.util.exhaustive

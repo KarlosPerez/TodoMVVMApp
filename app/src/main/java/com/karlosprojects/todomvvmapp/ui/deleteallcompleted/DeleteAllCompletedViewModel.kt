@@ -2,8 +2,8 @@ package com.karlosprojects.todomvvmapp.ui.deleteallcompleted
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
-import com.karlosprojects.todomvvmapp.data.TaskDao
-import com.karlosprojects.todomvvmapp.di.ApplicationScope
+import com.karlosprojects.di.ApplicationScope
+import com.karlosprojects.local.dao.TaskDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

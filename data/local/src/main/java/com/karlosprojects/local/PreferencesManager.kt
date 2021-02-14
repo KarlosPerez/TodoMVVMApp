@@ -1,4 +1,4 @@
-package com.karlosprojects.todomvvmapp.data
+package com.karlosprojects.local
 
 import android.content.Context
 import androidx.datastore.preferences.createDataStore

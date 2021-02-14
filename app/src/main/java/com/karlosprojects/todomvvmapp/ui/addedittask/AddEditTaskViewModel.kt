@@ -5,8 +5,8 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.karlosprojects.todomvvmapp.data.Task
-import com.karlosprojects.todomvvmapp.data.TaskDao
+import com.karlosprojects.local.entity.Task
+import com.karlosprojects.local.dao.TaskDao
 import com.karlosprojects.todomvvmapp.ui.ADD_TASK_RESULT_OK
 import com.karlosprojects.todomvvmapp.ui.EDIT_TASK_RESULT_OK
 import kotlinx.coroutines.channels.Channel

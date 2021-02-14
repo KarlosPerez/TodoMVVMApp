@@ -1,2 +1,3 @@
+include ':data:local'
 include ':app'
 rootProject.name = "TodoMVVMApp"

@@ -1,4 +1,4 @@
-package com.karlosprojects.todomvvmapp.data
+package com.karlosprojects.local.data
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.asLiveData
@@ -7,6 +7,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.google.common.truth.Truth.assertThat
+import com.karlosprojects.local.SortOrder
+import com.karlosprojects.local.entity.Task
+import com.karlosprojects.local.dao.TaskDao
+import com.karlosprojects.local.TaskDatabase
 import com.karlosprojects.todomvvmapp.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest

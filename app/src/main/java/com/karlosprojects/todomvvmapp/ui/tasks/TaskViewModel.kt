@@ -3,10 +3,10 @@ package com.karlosprojects.todomvvmapp.ui.tasks
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
-import com.karlosprojects.todomvvmapp.data.PreferencesManager
-import com.karlosprojects.todomvvmapp.data.SortOrder
-import com.karlosprojects.todomvvmapp.data.Task
-import com.karlosprojects.todomvvmapp.data.TaskDao
+import com.karlosprojects.local.PreferencesManager
+import com.karlosprojects.local.SortOrder
+import com.karlosprojects.local.entity.Task
+import com.karlosprojects.local.dao.TaskDao
 import com.karlosprojects.todomvvmapp.ui.ADD_TASK_RESULT_OK
 import com.karlosprojects.todomvvmapp.ui.EDIT_TASK_RESULT_OK
 import kotlinx.coroutines.ExperimentalCoroutinesApi

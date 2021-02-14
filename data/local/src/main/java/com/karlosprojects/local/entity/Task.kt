@@ -1,4 +1,4 @@
-package com.karlosprojects.todomvvmapp.data
+package com.karlosprojects.local.entity
 
 import android.os.Parcelable
 import androidx.room.Entity

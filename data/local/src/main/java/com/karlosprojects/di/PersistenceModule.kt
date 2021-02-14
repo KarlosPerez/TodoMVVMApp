@@ -1,13 +1,12 @@
-package com.karlosprojects.todomvvmapp.di
+package com.karlosprojects.di
 
 import android.app.Application
 import androidx.room.Room
-import com.karlosprojects.todomvvmapp.data.TaskDatabase
+import com.karlosprojects.local.TaskDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import javax.inject.Qualifier

@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.karlosprojects.todomvvmapp.data.Task
+import com.karlosprojects.local.entity.Task
 import com.karlosprojects.todomvvmapp.databinding.ItemTaskBinding
 
 class TaskAdapter(private val listener : OnItemClickListener) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DiffCallback()) {

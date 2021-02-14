@@ -1,6 +1,8 @@
-package com.karlosprojects.todomvvmapp.data
+package com.karlosprojects.local.dao
 
 import androidx.room.*
+import com.karlosprojects.local.SortOrder
+import com.karlosprojects.local.entity.Task
 import kotlinx.coroutines.flow.Flow
 
 @Dao

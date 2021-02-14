@@ -1,11 +1,12 @@
-package com.karlosprojects.todomvvmapp.data
+package com.karlosprojects.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.karlosprojects.todomvvmapp.di.ApplicationScope
+import com.karlosprojects.di.ApplicationScope
+import com.karlosprojects.local.dao.TaskDao
+import com.karlosprojects.local.entity.Task
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
