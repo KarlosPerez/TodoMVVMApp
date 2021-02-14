@@ -1,32 +1,54 @@
 package com.karlosprojects.todomvvmapp.ui.addedittask
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
-import com.karlosprojects.todomvvmapp.R
 import com.karlosprojects.todomvvmapp.databinding.FragmentAddEditTaskBinding
+import com.karlosprojects.todomvvmapp.ui.base.BaseFragment
 import com.karlosprojects.todomvvmapp.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
-class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
+class AddEditTaskFragment : BaseFragment<FragmentAddEditTaskBinding, AddEditTaskViewModel>() {
 
-    private val viewModel : AddEditTaskViewModel by viewModels()
+    override val viewModel : AddEditTaskViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initViews()
+        initEvents()
+    }
 
-        val binding = FragmentAddEditTaskBinding.bind(view)
+    private fun initEvents() {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.addEditTaskEvent.collect { event ->
+                when (event) {
+                    is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> {
+                        showMessage(requireView(), event.message)
+                    }
+                    is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
+                        binding.addTaskTxtTaskName.clearFocus()
+                        setFragmentResult(
+                            "add_edit_request",
+                            bundleOf("add_edit_result" to event.result )
+                        )
+                        findNavController().popBackStack()
+                    }
+                }.exhaustive
+            }
+        }
+    }
 
+    private fun initViews() {
         binding.apply {
             addTaskTxtTaskName.setText(viewModel.taskName)
             addTaskCbkImportant.isChecked = viewModel.taskImportance
@@ -46,23 +68,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 viewModel.onSaveClick()
             }
         }
-
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.addEditTaskEvent.collect { event ->
-                when (event) {
-                    is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> {
-                        Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG).show()
-                    }
-                    is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
-                        binding.addTaskTxtTaskName.clearFocus()
-                        setFragmentResult(
-                            "add_edit_request",
-                            bundleOf("add_edit_result" to event.result )
-                        )
-                        findNavController().popBackStack()
-                    }
-                }.exhaustive
-            }
-        }
     }
+
+    override fun getViewBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ) = FragmentAddEditTaskBinding.inflate(inflater, container, false)
 }
