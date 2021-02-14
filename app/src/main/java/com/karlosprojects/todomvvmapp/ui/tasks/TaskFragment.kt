@@ -1,12 +1,8 @@
 package com.karlosprojects.todomvvmapp.ui.tasks
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +15,7 @@ import com.karlosprojects.todomvvmapp.R
 import com.karlosprojects.todomvvmapp.data.SortOrder
 import com.karlosprojects.todomvvmapp.data.Task
 import com.karlosprojects.todomvvmapp.databinding.FragmentTasksBinding
+import com.karlosprojects.todomvvmapp.ui.base.BaseFragment
 import com.karlosprojects.todomvvmapp.util.exhaustive
 import com.karlosprojects.todomvvmapp.util.onQueryTextChange
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,59 +24,23 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@ExperimentalCoroutinesApi
 @AndroidEntryPoint
-class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickListener {
+class TaskFragment : BaseFragment<FragmentTasksBinding, TaskViewModel>(), TaskAdapter.OnItemClickListener {
 
-    private val viewModel: TaskViewModel by viewModels()
+    override val viewModel: TaskViewModel by viewModels()
     private lateinit var searchView : SearchView
+    private val taskAdapter = TaskAdapter(this)
 
-    @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initViews()
+        observeTaskList()
+        initEvents()
+        setHasOptionsMenu(true)
+    }
 
-        //Don't need to inflate because the layout is already inflated. Note: Inflate means that a xml layout file is turned into objects
-        val binding = FragmentTasksBinding.bind(view)
-
-        val taskAdapter = TaskAdapter(this)
-
-        //apply means that you don't need to call binding all the time to setup the views
-        binding.apply {
-            tasksRecyclerView.apply {
-                adapter = taskAdapter
-                layoutManager = LinearLayoutManager(requireContext())
-                setHasFixedSize(true)
-            }
-            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
-                ): Boolean {
-                    return false
-                }
-
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val task = taskAdapter.currentList[viewHolder.adapterPosition]
-                    viewModel.onTaskSwiped(task)
-                }
-
-            }).attachToRecyclerView(tasksRecyclerView)
-
-            taskFab.setOnClickListener {
-                viewModel.onAddNewTaskClick()
-            }
-        }
-
-        setFragmentResultListener("add_edit_request") { _, bundle ->
-            val result = bundle.getInt("add_edit_result")
-            viewModel.onAddEditResult(result)
-        }
-
-        //submitList is a method of ListAdapter, and after we sent a new list, DiffUtil do the calculations (events and animations)
-        viewModel.taskList.observe(viewLifecycleOwner) {
-            taskAdapter.submitList(it)
-        }
-
+    private fun initEvents() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.taskEvent.collect { event ->
                 when(event) {
@@ -108,8 +69,45 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickL
                 }.exhaustive //this will turn this 'when' statement into an expression, making it compile time safety
             }
         }
+    }
 
-        setHasOptionsMenu(true)
+    private fun observeTaskList() {
+        //submitList is a method of ListAdapter, and after we sent a new list, DiffUtil do the calculations (events and animations)
+        viewModel.taskList.observe(viewLifecycleOwner) {
+            taskAdapter.submitList(it)
+        }
+    }
+
+    private fun initViews() {
+        binding.apply {
+            tasksRecyclerView.apply {
+                adapter = taskAdapter
+                layoutManager = LinearLayoutManager(requireContext())
+                setHasFixedSize(true)
+            }
+
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val task = taskAdapter.currentList[viewHolder.adapterPosition]
+                    viewModel.onTaskSwiped(task)
+                }
+            }).attachToRecyclerView(tasksRecyclerView)
+
+            taskFab.setOnClickListener { viewModel.onAddNewTaskClick() }
+        }
+
+        setFragmentResultListener("add_edit_request") { _, bundle ->
+            val result = bundle.getInt("add_edit_result")
+            viewModel.onAddEditResult(result)
+        }
     }
 
     @ExperimentalCoroutinesApi
@@ -129,6 +127,10 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickL
             viewModel.searchQuery.value = it
         }
 
+        observeHideCompletedTasks(menu)
+    }
+
+    private fun observeHideCompletedTasks(menu: Menu) {
         viewLifecycleOwner.lifecycleScope.launch {
             menu.findItem(R.id.action_hide_completed_task).isChecked =
                 viewModel.preferencesFlow.first().hideCompleted
@@ -169,4 +171,9 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TaskAdapter.OnItemClickL
         super.onDestroyView()
         searchView.setOnQueryTextListener(null)
     }
+
+    override fun getViewBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ) = FragmentTasksBinding.inflate(inflater, container, false)
 }
